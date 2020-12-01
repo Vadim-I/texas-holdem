@@ -17,6 +17,7 @@ public class PokerHand implements Comparable<PokerHand> {
         this.outputHand = defineCombination();
     }
 
+    // sorting cards by ranks, replacing ranks with letter symbols
     private List<Character> sortCardsByRanks(String stringHand) {
         List<String> cards = new ArrayList<>();
         try {
@@ -36,6 +37,7 @@ public class PokerHand implements Comparable<PokerHand> {
         return sortedCardsByRank;
     }
 
+    // sorting cards by suits
     private List<Character> sortCardsBySuits(String stringHand) {
         List<String> cards = new ArrayList<>();
         try {
@@ -49,6 +51,7 @@ public class PokerHand implements Comparable<PokerHand> {
         return sortedCardsBySuits;
     }
 
+    // checking string to validity, splitting into list
     private ArrayList<String> checkAndSplitInputHand(String stringHand) throws InvalidInputHandException {
         if (stringHand == null) throw new NullPointerException();
         if (stringHand.length() != 14) throw new InvalidInputHandException();
@@ -61,7 +64,10 @@ public class PokerHand implements Comparable<PokerHand> {
         for (int i = 2; i < stringHand.length(); i += 3) {
             if (stringHand.charAt(i) != ' ') throw new InvalidInputHandException();
         }
-        return new ArrayList<>(Arrays.asList(stringHand.split(" ")));
+        ArrayList<String> cards = new ArrayList<>(Arrays.asList(stringHand.split(" ")));
+        Set<String> set = new HashSet<>(cards);
+        if (set.size() != cards.size()) throw new InvalidInputHandException();
+        return cards;
     }
 
     private boolean isFlush() {
@@ -92,6 +98,7 @@ public class PokerHand implements Comparable<PokerHand> {
         return true;
     }
 
+    // counting number of duplicate ranks
     private List<Integer> countDuplicates() {
         List<Integer> duplicates = new ArrayList<>();
         sortCardsMap().entrySet().stream()
@@ -100,6 +107,7 @@ public class PokerHand implements Comparable<PokerHand> {
         return duplicates;
     }
 
+    // map (keys = ranks of cards, values = their number in the hand), reverse sorted by value
     private Map<Character, Integer> sortCardsMap() {
         Map<Character, Integer> map = new HashMap<>();
         for (Character rank : sortCardsByRanks(inputHand)) {
@@ -112,38 +120,38 @@ public class PokerHand implements Comparable<PokerHand> {
         return sortedMap;
     }
 
-    private void appendKeys(StringBuilder string, Character symbol, List<Character> mapKeys) {
+    private void appendCardRanks(StringBuilder string, Character symbol, List<Character> cardRanks) {
         string.append(symbol);
-        for (Character c : mapKeys) {
+        for (Character c : cardRanks) {
             string.append(c);
         }
     }
 
     private String defineCombination() {
         List<Integer> duplicates = countDuplicates();
-        List<Character> mapKeys = new ArrayList<>(sortCardsMap().keySet());
+        List<Character> cardRanks = new ArrayList<>(sortCardsMap().keySet());
         StringBuilder stringHand = new StringBuilder();
 
         if (isRoyalFlush()) {
             stringHand.append('A');                                           // Royal flush
         } else if (isStraightFlush()) {                                       // Straight flush
-            appendKeys(stringHand, 'B', mapKeys);
+            appendCardRanks(stringHand, 'B', cardRanks);
         } else if (duplicates.equals(Collections.singletonList(4))) {         // Four of a kind
-            appendKeys(stringHand, 'C', mapKeys);
+            appendCardRanks(stringHand, 'C', cardRanks);
         } else if (duplicates.equals(Arrays.asList(3, 2))) {                  // Full house
-            appendKeys(stringHand, 'D', mapKeys);
+            appendCardRanks(stringHand, 'D', cardRanks);
         } else if (isFlush()) {                                               // Flush
-            appendKeys(stringHand, 'E', mapKeys);
+            appendCardRanks(stringHand, 'E', cardRanks);
         } else if (isStraight()) {                                            // Straight
-            appendKeys(stringHand, 'F', mapKeys);
+            appendCardRanks(stringHand, 'F', cardRanks);
         } else if (duplicates.equals(Collections.singletonList(3))) {         // Three of a kind
-            appendKeys(stringHand, 'G', mapKeys);
+            appendCardRanks(stringHand, 'G', cardRanks);
         } else if (duplicates.equals(Arrays.asList(2, 2))) {                  // Two pairs
-            appendKeys(stringHand, 'H', mapKeys);
+            appendCardRanks(stringHand, 'H', cardRanks);
         } else if (duplicates.equals(Collections.singletonList(2))) {         // Pair
-            appendKeys(stringHand, 'I', mapKeys);
+            appendCardRanks(stringHand, 'I', cardRanks);
         } else {                                                              // Highcard
-            appendKeys(stringHand, 'J', mapKeys);
+            appendCardRanks(stringHand, 'J', cardRanks);
         }
         return stringHand.toString();
     }
@@ -156,6 +164,10 @@ public class PokerHand implements Comparable<PokerHand> {
     @Override
     public String toString() {
         return inputHand + " (" + outputHand + ")";
+    }
+
+    public String getOutputHand() {
+        return outputHand;
     }
 }
 
