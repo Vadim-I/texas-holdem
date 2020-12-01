@@ -1,5 +1,7 @@
 package com.pokerapp;
 
+import com.pokerapp.exceptions.InvalidInputHandException;
+
 import java.util.*;
 
 public class PokerHand implements Comparable<PokerHand> {
@@ -15,11 +17,13 @@ public class PokerHand implements Comparable<PokerHand> {
         this.outputHand = defineCombination();
     }
 
-    // TODO check inputhand
-
     private List<Character> sortCardsByRanks(String stringHand) {
-        // TODO check inputhand
-        String[] cards = stringHand.split(" ");
+        List<String> cards = new ArrayList<>();
+        try {
+            cards = checkAndSplitInputHand(stringHand);
+        } catch (NullPointerException | InvalidInputHandException e) {
+            System.out.println("Exception: invalid or null input hand");
+        }
         List<Character> sortedCardsByRank = new ArrayList<>();
         for (String card : cards) {
             for (int i = 0; i < ranks.size(); i++) {
@@ -33,14 +37,31 @@ public class PokerHand implements Comparable<PokerHand> {
     }
 
     private List<Character> sortCardsBySuits(String stringHand) {
-        // TODO check inputhand
-        String[] cards = stringHand.split(" ");
-        List<Character> sortedCardsBySuits = new ArrayList<>();
-        for (String card : cards) {
-            sortedCardsBySuits.add(card.charAt(1));
+        List<String> cards = new ArrayList<>();
+        try {
+            cards = checkAndSplitInputHand(stringHand);
+        } catch (NullPointerException | InvalidInputHandException e) {
+            System.out.println("Exception: invalid or null input hand");
         }
+        List<Character> sortedCardsBySuits = new ArrayList<>();
+        cards.forEach(x -> sortedCardsBySuits.add(x.charAt(1)));
         Collections.sort(sortedCardsBySuits);
         return sortedCardsBySuits;
+    }
+
+    private ArrayList<String> checkAndSplitInputHand(String stringHand) throws InvalidInputHandException {
+        if (stringHand == null) throw new NullPointerException();
+        if (stringHand.length() != 14) throw new InvalidInputHandException();
+        for (int i = 0; i < stringHand.length(); i += 3) {
+            if (!ranks.contains(stringHand.charAt(i))) throw new InvalidInputHandException();
+        }
+        for (int i = 1; i < stringHand.length(); i += 3) {
+            if (!suits.contains(stringHand.charAt(i))) throw new InvalidInputHandException();
+        }
+        for (int i = 2; i < stringHand.length(); i += 3) {
+            if (stringHand.charAt(i) != ' ') throw new InvalidInputHandException();
+        }
+        return new ArrayList<>(Arrays.asList(stringHand.split(" ")));
     }
 
     private boolean isFlush() {
@@ -124,7 +145,6 @@ public class PokerHand implements Comparable<PokerHand> {
         } else {                                                              // Highcard
             appendKeys(stringHand, 'J', mapKeys);
         }
-
         return stringHand.toString();
     }
 
@@ -137,7 +157,6 @@ public class PokerHand implements Comparable<PokerHand> {
     public String toString() {
         return inputHand + " (" + outputHand + ")";
     }
-
 }
 
 
